@@ -1,0 +1,72 @@
+{% if user.is_authenticated %}
+<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);">
+{% endif %}
+
+<div class="login-card" style="{% if user.is_authenticated %}max-width:420px;{% endif %}{% if raac_challenge %}border-top:4px solid #EF4444;{% else %}border-top:4px solid #6366F1;{% endif %}">
+
+    <div style="margin-bottom:28px;">
+
+        {% if raac_challenge %}
+        {# ── RAAC STATE: entire card shifts personality ── #}
+        <style>
+        @keyframes pulse-ring {
+            0%   { transform:scale(1);   opacity:0.6; }
+            70%  { transform:scale(1.6); opacity:0; }
+            100% { transform:scale(1.6); opacity:0; }
+        }
+        </style>
+        <div style="position:relative;width:52px;height:52px;margin-bottom:20px;">
+            <div style="position:absolute;inset:0;border-radius:14px;background:rgba(239,68,68,0.2);animation:pulse-ring 2s ease-out infinite;"></div>
+            <div style="position:relative;width:52px;height:52px;background:rgba(239,68,68,0.1);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-shield-exclamation" style="font-size:24px;color:#EF4444;"></i>
+            </div>
+        </div>
+        <div class="login-logo" style="{% if user.is_authenticated %}color:var(--text-primary);{% endif %}color:#EF4444;">Security Challenge</div>
+        <div class="login-tagline" style="color:#64748B;">Unusual activity was detected on your account.<br>Confirm your identity to regain access.</div>
+
+        {% else %}
+        {# ── NORMAL MFA STATE ── #}
+        <div style="width:52px;height:52px;background:rgba(99,102,241,0.1);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
+            <i class="bi bi-shield-lock" style="font-size:24px;color:#6366F1;"></i>
+        </div>
+        <div class="login-logo" style="{% if user.is_authenticated %}color:var(--text-primary);{% endif %}">Security Verification</div>
+        <div class="login-tagline">Verification required to access your secure workspace.<br>Enter the 6-digit code from your app.</div>
+        {% endif %}
+
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label" style="color:#64748B;">Authentication Code</label>
+            <input
+                name="code"
+                type="text"
+                class="form-control"
+                placeholder="0  0  0  0  0  0"
+                maxlength="6"
+                pattern="\d{6}"
+                inputmode="numeric"
+                required
+                autofocus
+                autocomplete="one-time-code"
+                style="font-size:26px;letter-spacing:10px;text-align:center;font-weight:700;padding:14px;{% if raac_challenge %}border-color:rgba(239,68,68,0.3);{% endif %}"
+                oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length===6) this.form.submit();"
+            >
+        </div>
+        <button type="submit" class="btn {% if raac_challenge %}btn-danger{% else %}btn-primary{% endif %}" style="width:100%;justify-content:center;padding:12px;font-size:14px;margin-top:6px;{% if raac_challenge %}background:#EF4444;color:#fff;border:none;{% endif %}">
+            <i class="bi bi-arrow-right"></i> {% if raac_challenge %}Confirm Identity{% else %}Verify Identity{% endif %}
+        </button>
+    </form>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #E2E8F0;text-align:center;">
+        <span style="font-size:12px;color:#94A3B8;">
+            <i class="bi bi-info-circle"></i>
+            Open Google Authenticator, Authy, or any TOTP app
+        </span>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+</div>
+{% endif %}

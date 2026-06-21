@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Clinical Records | Hospital{% endblock %}
+{% block page_title %}Clinical Records{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div><h1>Patient Selection</h1><p>Select a patient to view or add clinical records</p></div>
+</div>
+
+<div class="card">
+    <div class="card-header"><span class="card-title">All Patients</span></div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr><th>Patient</th><th>DOB</th><th>Gender</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.1);color:var(--success);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">{{ patient.first_name|first }}</div>
+                            <div style="font-weight:600;">{{ patient.first_name }} {{ patient.last_name }}</div>
+                        </div>
+                    </td>
+                    <td style="font-size:13px;color:var(--text-secondary);">{{ patient.date_of_birth }}</td>
+                    <td style="font-size:13px;">{{ patient.get_gender_display }}</td>
+                    <td>{% if patient.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-gray">Inactive</span>{% endif %}</td>
+                    <td>
+                        <a href="{% url 'clinical:patient_records' patient.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-clipboard2-pulse"></i> View Records</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><div class="empty-state"><i class="bi bi-person-vcard"></i><p>No patients found.</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

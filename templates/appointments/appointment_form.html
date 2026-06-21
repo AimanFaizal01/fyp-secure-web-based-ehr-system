@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | Hospital{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ title }}</h1>
+        <p>{% if 'Edit' in title %}Update appointment details{% else %}Schedule a new appointment{% endif %}</p>
+    </div>
+    <a href="{% url 'appointments:appointment_list' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="card" style="max-width:680px;">
+    <div class="card-header"><span class="card-title">Appointment Details</span></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Patient</label>
+                    {{ form.patient }}
+                    {% if form.patient.errors %}<div class="form-error">{{ form.patient.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Doctor</label>
+                    {{ form.doctor }}
+                    {% if form.doctor.errors %}<div class="form-error">{{ form.doctor.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}<div class="form-error">{{ form.date.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time</label>
+                    {{ form.time }}
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Reason for Visit</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}<div class="form-error">{{ form.reason.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Confirm Appointment</button>
+                <button type="submit" name="save_draft" class="btn btn-secondary" formnovalidate><i class="bi bi-file-earmark"></i> Save as Draft</button>
+                <a href="{% url 'appointments:appointment_list' %}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.card-body select, .card-body input, .card-body textarea').forEach(function(el){
+    if(!el.classList.contains('btn') && el.type !== 'submit') el.classList.add('form-control');
+});
+</script>
+{% endblock %}
+{% endblock %}

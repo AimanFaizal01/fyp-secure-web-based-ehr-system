@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="description" content="{% block meta_description %}Hospital | Enterprise-grade Electronic Health Records with advanced security analytics.{% endblock %}">
+    <title>{% block title %}Hospital{% endblock %}</title>
+    
+    <!-- Favicon - Custom Pulse Icon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236366F1'><path fill-rule='evenodd' d='M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2'/></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-sidebar: #0D0F14;
+            --bg-main: #F7F8FA;
+            --bg-card: #FFFFFF;
+            --accent: #6366F1;
+            --accent-hover: #4F46E5;
+            --accent-light: rgba(99,102,241,0.08);
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --text-muted: #94A3B8;
+            --border: #E2E8F0;
+            --danger: #EF4444;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --sidebar-width: 260px;
+            --topbar-height: 64px;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 24px rgba(0,0,0,0.10);
+        }
+
+        body {
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-sidebar);
+            display: flex; flex-direction: column;
+            z-index: 100;
+            border-right: 1px solid rgba(255,255,255,0.04);
+        }
+        .sidebar-brand {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .sidebar-brand .brand-name {
+            font-size: 17px; font-weight: 700;
+            color: #fff; letter-spacing: -0.3px;
+        }
+        .sidebar-brand .brand-sub {
+            font-size: 11px; color: rgba(255,255,255,0.35);
+            letter-spacing: 0.5px; text-transform: uppercase;
+            margin-top: 2px;
+        }
+        .sidebar-section {
+            padding: 20px 16px 8px;
+            font-size: 10px; font-weight: 600;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .sidebar nav { flex: 1; padding: 0 12px; overflow-y: auto; }
+        .sidebar nav a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none; font-size: 13.5px; font-weight: 500;
+            transition: all 0.15s ease;
+            margin-bottom: 2px;
+        }
+        .sidebar nav a i { font-size: 15px; flex-shrink: 0; }
+        .sidebar nav a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+        .sidebar nav a.active { color: #fff; background: var(--accent); }
+        .sidebar nav a.active i { color: #fff; }
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .sidebar-user {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+        }
+        .sidebar-avatar {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: #fff;
+            flex-shrink: 0;
+        }
+        .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+        .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+        /* ── MAIN LAYOUT ── */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            height: var(--topbar-height);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center;
+            padding: 0 28px;
+            gap: 16px;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-title {
+            font-size: 17px; font-weight: 700;
+            color: var(--text-primary); letter-spacing: -0.3px;
+            flex: 1;
+        }
+        .search-wrap {
+            position: relative;
+        }
+        .search-wrap i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 14px; pointer-events: none;
+        }
+        .search-wrap input {
+            background: var(--bg-main); border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 14px 8px 36px;
+            font-family: inherit; font-size: 13px; color: var(--text-primary);
+            outline: none; width: 260px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-wrap input::placeholder { color: var(--text-muted); }
+        .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-logout {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent; color: var(--text-secondary);
+            font-family: inherit; font-size: 13px; font-weight: 500;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-logout:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.05); }
+
+        /* ── PAGE CONTENT ── */
+        .page-content { padding: 28px; flex: 1; }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow);
+        }
+        .card-header {
+            padding: 18px 22px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: transparent;
+        }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+        .card-body { padding: 22px; }
+
+        /* ── STAT CARDS ── */
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 22px 24px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .stat-value { font-size: 32px; font-weight: 700; color: var(--text-primary); letter-spacing: -1px; margin: 6px 0 2px; line-height: 1; }
+        .stat-sub { font-size: 12px; color: var(--text-muted); }
+        .stat-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; margin-bottom: 14px;
+        }
+        .stat-icon.indigo { background: rgba(99,102,241,0.1); color: var(--accent); }
+        .stat-icon.green  { background: rgba(16,185,129,0.1); color: var(--success); }
+        .stat-icon.amber  { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .stat-icon.red    { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .stat-icon.blue   { background: rgba(59,130,246,0.1); color: var(--info); }
+
+        /* ── TABLES ── */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.6px;
+            padding: 10px 16px; background: var(--bg-main);
+            border-bottom: 1px solid var(--border); text-align: left;
+        }
+        .data-table th:first-child { border-radius: 8px 0 0 0; }
+        .data-table th:last-child  { border-radius: 0 8px 0 0; }
+        .data-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-primary); font-size: 13.5px; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: var(--bg-main); }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+        }
+        .badge-green  { background: rgba(16,185,129,0.1);  color: #059669; }
+        .badge-red    { background: rgba(239,68,68,0.1);   color: #DC2626; }
+        .badge-amber  { background: rgba(245,158,11,0.1);  color: #D97706; }
+        .badge-blue   { background: rgba(59,130,246,0.1);  color: #2563EB; }
+        .badge-indigo { background: rgba(99,102,241,0.1);  color: #4F46E5; }
+        .badge-gray   { background: rgba(100,116,139,0.1); color: #475569; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px; border: none;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.35); }
+        .btn-secondary { background: var(--bg-main); color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); color: var(--text-primary); }
+        .btn-danger { background: rgba(239,68,68,0.08); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+        .btn-success { background: rgba(16,185,129,0.08); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+        .btn-success:hover { background: var(--success); color: #fff; }
+        .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
+        .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: var(--bg-main); }
+        .btn-icon { width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 6px; }
+
+        /* ── FORMS ── */
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+        .form-control {
+            width: 100%; padding: 9px 13px; border-radius: 8px;
+            border: 1px solid var(--border); background: #fff;
+            font-family: inherit; font-size: 13.5px; color: var(--text-primary);
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+        
+        /* Real-time live validation cues */
+        .form-control:not(:placeholder-shown):invalid {
+            border-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.02);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+        }
+        .validation-hint {
+            color: #ef4444; font-size: 11px; font-weight: 600; 
+            margin-top: 5px; display: none; animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        select.form-control { 
+            cursor: pointer; 
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+        textarea.form-control { resize: vertical; min-height: 90px; }
+        .form-help { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .form-error { font-size: 12px; color: var(--danger); margin-top: 4px; }
+        .form-actions { display: flex; gap: 10px; align-items: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+        /* ── TOAST NOTIFICATIONS ── */
+        #toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+            max-width: 360px;
+        }
+        .toast-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            animation: slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            position: relative; overflow: hidden;
+        }
+        .toast-item::before {
+            content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+        }
+        .toast-item.toast-success::before { background: var(--success); }
+        .toast-item.toast-error::before   { background: var(--danger); }
+        .toast-item.toast-warning::before { background: var(--warning); }
+        .toast-item.toast-info::before    { background: var(--info); }
+        .toast-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .toast-item.toast-success .toast-icon { color: var(--success); }
+        .toast-item.toast-error .toast-icon   { color: var(--danger); }
+        .toast-item.toast-warning .toast-icon { color: var(--warning); }
+        .toast-item.toast-info .toast-icon    { color: var(--info); }
+        .toast-body { flex: 1; }
+        .toast-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+        .toast-msg { font-size: 12.5px; color: var(--text-secondary); }
+        .toast-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 16px; padding: 0; line-height: 1; flex-shrink: 0; }
+        .toast-close:hover { color: var(--text-primary); }
+        .toast-hide { animation: slideOut 0.25s ease forwards; }
+        @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes slideOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(20px); height:0; padding:0; margin:0; } }
+
+        /* ── CUSTOM MODAL (replaces native confirm) ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 9000;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+        .modal-box {
+            background: #fff; border-radius: 16px;
+            width: 100%; max-width: 420px; margin: 16px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            overflow: hidden;
+        }
+        .modal-box-header { padding: 28px 28px 0; }
+        .modal-icon-wrap {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 18px;
+        }
+        .modal-icon-wrap.danger  { background: rgba(239,68,68,0.1);  color: var(--danger); }
+        .modal-icon-wrap.warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .modal-icon-wrap.success { background: rgba(16,185,129,0.1); color: #10b981; }
+        .modal-icon-wrap.info    { background: rgba(99,102,241,0.1);  color: #6366f1; }
+        .modal-box h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.4px; margin: 0 0 6px 0; }
+        .modal-box p  { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+        .modal-box-body { padding: 0 28px 28px; }
+        .modal-box-footer { display: flex; gap: 12px; justify-content: flex-end; padding: 20px 28px; border-top: 1px solid var(--border); background: var(--bg-main); }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        @keyframes popIn  { from{opacity:0;transform:scale(0.92);} to{opacity:1;transform:scale(1);} }
+
+        /* ── SESSION TIMEOUT ── */
+        #session-modal { display:none; }
+        #session-modal.active { display:flex; }
+
+        /* ── MISC ── */
+        .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+        .page-header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; color:var(--text-primary); }
+        .page-header p { font-size:13px; color:var(--text-muted); margin-top:2px; }
+        .empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+        .empty-state i { font-size:42px; margin-bottom:12px; display:block; }
+        .empty-state p { font-size:14px; }
+        .divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { color: var(--accent-hover); }
+
+        /* ── LOGIN PAGE ── */
+        .login-page {
+            position: fixed; inset: 0;
+            background: var(--bg-sidebar);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .login-page::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .login-card {
+            background: #fff; border-radius: 20px; padding: 42px;
+            width: 100%; max-width: 420px; margin: 16px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+            position: relative; z-index: 1;
+        }
+        .login-logo { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.5px; }
+        .login-tagline { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-name"><i class="bi bi-activity" style="color:var(--accent)"></i> Hospital</div>
+        <div class="brand-sub">Electronic Health Records</div>
+    </div>
+    <nav>
+        <div class="sidebar-section">Main</div>
+        <a href="{% url 'accounts:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+        {% if user.is_admin %}
+        <div class="sidebar-section">Administration</div>
+        <a href="{% url 'accounts:user_list' %}" class="{% if 'user' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-people"></i> Staff Management</a>
+        <a href="{% url 'accounts:audit_log_list' %}" class="{% if 'audit' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-shield-check"></i> Audit Logs</a>
+        {% endif %}
+        {% if user.is_receptionist or user.is_admin or user.is_doctor or user.is_nurse %}
+        <div class="sidebar-section">Operations</div>
+        {% if user.is_receptionist or user.is_admin %}
+        <a href="{% url 'patients:patient_list' %}" class="{% if request.resolver_match.app_name == 'patients' %}active{% endif %}"><i class="bi bi-person-vcard"></i> Patients</a>
+        {% endif %}
+        <a href="{% url 'appointments:appointment_list' %}" class="{% if request.resolver_match.app_name == 'appointments' %}active{% endif %}"><i class="bi bi-calendar-check"></i> Appointments</a>
+        {% endif %}
+        {% if user.is_doctor or user.is_nurse %}
+        <div class="sidebar-section">Clinical</div>
+        <a href="{% url 'clinical:patient_list' %}" class="{% if request.resolver_match.app_name == 'clinical' %}active{% endif %}"><i class="bi bi-clipboard2-pulse"></i> Clinical Records</a>
+        {% endif %}
+        <div class="sidebar-section">Security</div>
+        <a href="{% url 'accounts:setup_mfa' %}" class="{% if 'mfa' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-shield-lock"></i> MFA Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">{{ user.first_name|first|default:user.username|first|upper }}</div>
+            <div>
+                <div class="sidebar-user-name">{{ user.first_name|default:user.username }}</div>
+                <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="main-wrapper">
+    <div class="topbar">
+        <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        <form class="search-wrap" action="{% url 'accounts:global_search' %}" method="GET">
+            <i class="bi bi-search"></i>
+            <input type="search" name="q" placeholder="Search patients, staff, records...">
+        </form>
+        <div class="topbar-actions">
+            <a href="#" class="btn-logout" onclick="return showConfirm('{% url 'accounts:logout' %}','Sign Out','You will be securely signed out of Hospital.','danger')"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+    </div>
+    <div class="page-content">{% block content %}{% endblock %}</div>
+</div>
+{% else %}
+<div class="login-page">{% block guest_content %}{% endblock %}</div>
+{% endif %}
+
+<div id="toast-container"></div>
+
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+        <div class="modal-box-header">
+            <div class="modal-icon-wrap danger" id="confirmIcon"><i class="bi bi-trash3"></i></div>
+            <h3 id="confirmTitle">Are you sure?</h3>
+        </div>
+        <div class="modal-box-body"><p id="confirmMessage">This action cannot be undone.</p></div>
+        <div class="modal-box-footer">
+            <button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Cancel</button>
+            <a href="#" id="confirmBtn" class="btn btn-danger btn-sm">Confirm</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="session-modal">
+    <div class="modal-box">
+        <div class="modal-box-header">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+                <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
+                    <svg width="64" height="64" style="transform:rotate(-90deg);">
+                        <circle cx="32" cy="32" r="28" fill="none" stroke="#E2E8F0" stroke-width="4"/>
+                        <circle id="sessionRing" cx="32" cy="32" r="28" fill="none" stroke="#F59E0B" stroke-width="4"
+                            stroke-dasharray="175.9" stroke-dashoffset="0" stroke-linecap="round"
+                            style="transition:stroke-dashoffset 1s linear, stroke 0.5s;"/>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                        <span id="sessionCountdown" style="font-size:18px;font-weight:700;color:var(--text-primary);">30</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 4px;">Session Expiring</h3>
+                    <p style="margin:0;font-size:13px;color:var(--text-secondary);">You'll be automatically logged out due to inactivity.</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-box-footer">
+            <a href="{% if user.is_authenticated %}{% url 'accounts:logout' %}{% else %}#{% endif %}" class="btn btn-ghost btn-sm">Logout Now</a>
+            <button class="btn btn-primary btn-sm" onclick="resetSession()"><i class="bi bi-arrow-clockwise"></i> Stay Logged In</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showToast(msg,type,title){
+    const ic={success:'bi-check-circle',error:'bi-x-circle',warning:'bi-exclamation-triangle',info:'bi-info-circle'};
+    const ti={success:'Success',error:'Error',warning:'Warning',info:'Info'};
+    const c=document.getElementById('toast-container');
+    const el=document.createElement('div');
+    el.className='toast-item toast-'+type;
+    el.innerHTML='<i class="bi '+ic[type]+' toast-icon"></i><div class="toast-body"><div class="toast-title">'+(title||ti[type])+'</div><div class="toast-msg">'+msg+'</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>';
+    c.appendChild(el);
+    setTimeout(function(){el.classList.add('toast-hide');setTimeout(function(){el.remove();},300);},5000);
+}
+document.addEventListener('DOMContentLoaded',function(){
+    {% for message in messages %}
+    showToast("{{ message|escapejs }}","{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %}");
+    {% endfor %}
+});
+function showConfirm(href,title,msg,type){
+    type=type||'danger';
+    document.getElementById('confirmTitle').textContent=title;
+    document.getElementById('confirmMessage').textContent=msg;
+    document.getElementById('confirmBtn').href=href;
+    document.getElementById('confirmBtn').className='btn btn-'+type+' btn-sm';
+    var ic=document.getElementById('confirmIcon');
+    ic.className='modal-icon-wrap '+type;
+    var iconMap = {
+        'danger': '<i class="bi bi-trash3"></i>',
+        'warning': '<i class="bi bi-exclamation-triangle"></i>',
+        'success': '<i class="bi bi-shield-check"></i>',
+        'info': '<i class="bi bi-gear"></i>'
+    };
+    ic.innerHTML = iconMap[type] || '<i class="bi bi-info-circle"></i>';
+    document.getElementById('confirmModal').classList.add('active');
+    return false;
+}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('active');}
+document.getElementById('confirmModal').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
+{% if user.is_authenticated %}
+var timeLeft=30, warnAt=10, warned=false, isHovered=false;
+var sm=document.getElementById('session-modal');
+var cd=document.getElementById('sessionCountdown');
+var ring=document.getElementById('sessionRing');
+var CIRCUMFERENCE=175.9;
+
+function resetSession(){
+    timeLeft=30; warned=false;
+    sm.classList.remove('active');
+    if(ring){ ring.style.strokeDashoffset=0; ring.style.stroke='#F59E0B'; }
+    if(cd){ cd.textContent=warnAt; cd.style.color='var(--text-primary)'; }
+}
+
+// Pause when hovering over the modal
+sm.addEventListener('mouseenter', function() { isHovered = true; });
+sm.addEventListener('mouseleave', function() { isHovered = false; });
+
+['mousemove','mousedown','keypress','scroll','touchstart'].forEach(function(e){
+    document.addEventListener(e, function() {
+        if (!sm.classList.contains('active')) resetSession();
+    }, {passive:true});
+});
+
+setInterval(function(){
+    // Abort timer if we are on the MFA verification page (don't rush the security check)
+    if (window.location.pathname.includes('/accounts/verify-mfa/')) return;
+    
+    if (isHovered && sm.classList.contains('active')) return; // Freeze if hovered
+    
+    timeLeft--;
+    if(timeLeft<=warnAt){
+        if(!warned){ warned=true; sm.classList.add('active'); }
+        var remaining=timeLeft;
+        if(cd){ cd.textContent=remaining; }
+        if(ring){
+            var pct=remaining/warnAt;
+            ring.style.strokeDashoffset=CIRCUMFERENCE*(1-pct);
+            ring.style.stroke='#EF4444';
+            if(cd) cd.style.color='#EF4444';
+        }
+    }
+    if(timeLeft<=0) window.location.href="{% url 'accounts:logout' %}?reason=timeout";
+},1000);
+{% endif %}
+
+// Global: apply form-control class to all bare form widgets
+document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not(.btn):not(.search-wrap input), select, textarea').forEach(function(el){
+        if(!el.classList.contains('form-control') && !el.classList.contains('btn')){
+            el.classList.add('form-control');
+        }
+    });
+
+    // ─── LIVE VALIDATION ENGINE ───
+    document.querySelectorAll('input[pattern], input[max], input[min]').forEach(function(el){
+        const hint = document.createElement('div');
+        hint.className = 'validation-hint';
+        hint.innerHTML = '<i class="bi bi-exclamation-circle"></i> ' + (el.getAttribute('title') || 'Invalid format');
+        // Insert immediately after the field
+        if (el.nextSibling) el.parentNode.insertBefore(hint, el.nextSibling);
+        else el.parentNode.appendChild(hint);
+
+        const check = function() {
+            if (el.value && !el.checkValidity()) {
+                hint.style.display = 'block';
+            } else {
+                hint.style.display = 'none';
+            }
+        };
+        el.addEventListener('input', check);
+        el.addEventListener('blur', check);
+    });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
+

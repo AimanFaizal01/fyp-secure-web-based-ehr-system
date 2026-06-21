@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Patients | Hospital{% endblock %}
+{% block meta_description %}Patient Registry - Secure management of clinical profiles and medical histories within the Hospital network.{% endblock %}
+{% block page_title %}Patients{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Patient Registry</h1>
+        <p>All registered patients in the system</p>
+    </div>
+    {% if not user.is_doctor %}
+    <a href="{% url 'patients:patient_create' %}" class="btn btn-primary"><i class="bi bi-plus"></i> Register Patient</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--bg-main);border-radius:var(--radius) var(--radius) 0 0;">
+        <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-wrap" style="flex:1;min-width:240px;">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control" placeholder="Search by name, phone, or ID..." value="{{ query|default:'' }}">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Search</button>
+            {% if query %}
+            <a href="{% url 'patients:patient_list' %}" class="btn btn-ghost"><i class="bi bi-x"></i> Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Patient</th>
+                    <th>Gender</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Reg. Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td style="color:var(--text-muted);font-size:12px;">{{ patient.id }}</td>
+                    <td>
+                        <div style="font-weight:600;">{{ patient.first_name }} {{ patient.last_name|default:"" }}</div>
+                        <div style="font-size:12px;color:var(--text-muted);">DOB: {{ patient.date_of_birth|default:"Not set" }}</div>
+                    </td>
+                    <td>{{ patient.get_gender_display|default:"Not set" }}</td>
+                    <td style="font-size:13px;">{{ patient.phone|default:"No contact info" }}</td>
+                    <td>
+                        {% if patient.is_active %}
+                        <span class="badge badge-green"><i class="bi bi-circle-fill" style="font-size:7px;"></i> Active</span>
+                        {% else %}
+                        <span class="badge badge-gray"><i class="bi bi-circle-fill" style="font-size:7px;"></i> Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if patient.status == 'draft' %}
+                        <span class="badge badge-amber">Draft</span>
+                        {% else %}
+                        <span class="badge badge-blue">Complete</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;">
+                            <a href="{% url 'patients:patient_detail' patient.pk %}" class="btn btn-ghost btn-icon btn-sm" title="View"><i class="bi bi-eye"></i></a>
+                            {% if user.is_receptionist or user.is_admin %}
+                            <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-ghost btn-icon btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% endif %}
+                            {% if user.is_receptionist or user.is_admin %}
+                            <a href="{% url 'patients:patient_toggle_active' patient.pk %}" class="btn btn-ghost btn-icon btn-sm" title="Toggle Active" onclick="return showConfirm('{% url 'patients:patient_toggle_active' patient.pk %}','Change Status','Are you sure you want to change the active status of {{ patient.first_name }} {{ patient.last_name }}?','warning')"><i class="bi bi-{% if patient.is_active %}pause-circle{% else %}play-circle{% endif %}"></i></a>
+                            {% endif %}
+                            {% if user.is_admin %}
+                            <a href="#" class="btn btn-danger btn-icon btn-sm" title="Delete" onclick="return showConfirm('{% url 'patients:patient_delete' patient.pk %}','Delete Patient Record','This will permanently erase {{ patient.first_name }} {{ patient.last_name }}\'s medical history. This cannot be undone.','danger')"><i class="bi bi-trash3"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7"><div class="empty-state"><i class="bi bi-person-vcard"></i><p>No patients found.</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

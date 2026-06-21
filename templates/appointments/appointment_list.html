@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Appointments | Hospital{% endblock %}
+{% block meta_description %}Clinical Schedule - Manage patient appointments, doctor availability, and draft records.{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Appointment Schedule</h1>
+        <p>Manage all patient appointments</p>
+    </div>
+    {% if user.is_receptionist or user.is_admin %}
+    <a href="{% url 'appointments:appointment_create' %}" class="btn btn-primary"><i class="bi bi-plus"></i> New Appointment</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--bg-main);border-radius:var(--radius) var(--radius) 0 0;">
+        <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-wrap" style="flex:1;min-width:220px;">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control" placeholder="Search by patient or doctor..." value="{{ query|default:'' }}">
+            </div>
+            <select name="status" class="form-control" style="width:180px;">
+                <option value="">All Statuses</option>
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+            {% if query or status_filter %}
+            <a href="{% url 'appointments:appointment_list' %}" class="btn btn-ghost"><i class="bi bi-x"></i> Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td style="color:var(--text-muted);font-size:12px;">{{ appt.id }}</td>
+                    <td><div style="font-weight:600;">{{ appt.patient.first_name }} {{ appt.patient.last_name }}</div></td>
+                    <td style="font-size:13px;">
+                        {% if appt.doctor %}
+                            Dr. {{ appt.doctor.first_name }} {{ appt.doctor.last_name }}
+                        {% else %}
+                            <span style="color:var(--text-muted);font-style:italic;">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if appt.date %}
+                            <div style="font-weight:500;">{{ appt.date }}</div>
+                            <div style="font-size:12px;color:var(--text-muted);">{{ appt.time|default:"" }}</div>
+                        {% else %}
+                            <span style="color:var(--text-muted);font-style:italic;">Not set</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:13px;color:var(--text-secondary);">{{ appt.reason|truncatechars:30 }}</td>
+                    <td>
+                        {% if appt.status == 'scheduled' %}<span class="badge badge-blue">Scheduled</span>
+                        {% elif appt.status == 'completed' %}<span class="badge badge-green">Completed</span>
+                        {% elif appt.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>
+                        {% elif appt.status == 'draft' %}<span class="badge badge-amber">Draft</span>
+                        {% elif appt.status == 'checked_in' %}<span class="badge badge-indigo">Checked In</span>
+                        {% elif appt.status == 'in_progress' %}<span class="badge badge-indigo">In Progress</span>
+                        {% else %}<span class="badge badge-gray">{{ appt.get_status_display }}</span>{% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;">
+                            <a href="{% url 'appointments:appointment_detail' appt.pk %}" class="btn btn-ghost btn-icon btn-sm" title="View"><i class="bi bi-eye"></i></a>
+                            {% if user.is_receptionist or user.is_admin %}
+                            <a href="{% url 'appointments:appointment_edit' appt.pk %}" class="btn btn-ghost btn-icon btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% endif %}
+                            {% if user.is_doctor or user.is_nurse or user.is_receptionist or user.is_admin %}
+                            <a href="{% url 'appointments:appointment_update_status' appt.pk %}" class="btn btn-ghost btn-icon btn-sm" title="Update Status"><i class="bi bi-arrow-repeat"></i></a>
+                            {% endif %}
+                            {% if user.is_admin %}
+                            <a href="#" class="btn btn-danger btn-icon btn-sm" title="Delete" onclick="return showConfirm('{% url 'appointments:appointment_delete' appt.pk %}','Delete Appointment','This will permanently delete the appointment for {{ appt.patient.first_name }} on {{ appt.date }}.','danger')"><i class="bi bi-trash3"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7"><div class="empty-state"><i class="bi bi-calendar-x"></i><p>No appointments found.</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

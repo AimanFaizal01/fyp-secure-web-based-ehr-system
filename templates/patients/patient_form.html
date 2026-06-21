@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | Hospital{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ title }}</h1>
+        <p>{% if 'Edit' in title %}Update patient information{% else %}Add a new patient to the system{% endif %}</p>
+    </div>
+    <a href="{% url 'patients:patient_list' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Back to Patients</a>
+</div>
+
+<div class="card" style="max-width:760px;">
+    <div class="card-header"><span class="card-title">Patient Information</span></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<div class="form-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}<div class="form-error">{{ form.last_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date of Birth</label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}<div class="form-error">{{ form.date_of_birth.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gender</label>
+                    {{ form.gender }}
+                    {% if form.gender.errors %}<div class="form-error">{{ form.gender.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<div class="form-error">{{ form.phone.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    {{ form.email }}
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Address</label>
+                    {{ form.address }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Emergency Contact Name</label>
+                    {{ form.emergency_contact_name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Emergency Contact Phone</label>
+                    {{ form.emergency_contact_phone }}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Complete Registration</button>
+                <button type="submit" name="save_draft" class="btn btn-secondary" formnovalidate><i class="bi bi-file-earmark"></i> Save as Draft</button>
+                <a href="{% url 'patients:patient_list' %}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(function(el){
+    el.classList.add('form-control');
+});
+
+function showLiveError(input, message) {
+    clearLiveError(input);
+    input.style.borderColor = '#ff3b3b';
+
+    const error = document.createElement('div');
+    error.className = 'form-error live-error';
+    error.innerText = message;
+    input.parentNode.appendChild(error);
+}
+
+function clearLiveError(input) {
+    input.style.borderColor = '';
+
+    const error = input.parentNode.querySelector('.live-error');
+    if (error) {
+        error.remove();
+    }
+}
+
+const phone = document.getElementById('id_phone');
+const emergencyPhone = document.getElementById('id_emergency_contact_phone');
+const email = document.getElementById('id_email');
+
+function checkPhone(input) {
+    const value = input.value.trim();
+
+    if (value === '') {
+        clearLiveError(input);
+    } else if (!/^[0-9+\-\s]+$/.test(value)) {
+        showLiveError(input, 'Only digits, spaces, hyphens (-) and (+) are permitted.');
+    } else {
+        clearLiveError(input);
+    }
+}
+
+if (phone) {
+    phone.addEventListener('input', function() {
+        checkPhone(phone);
+    });
+}
+
+if (emergencyPhone) {
+    emergencyPhone.addEventListener('input', function() {
+        checkPhone(emergencyPhone);
+    });
+}
+
+if (email) {
+    email.addEventListener('input', function() {
+        const value = email.value.trim();
+
+        if (value === '') {
+            clearLiveError(email);
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            showLiveError(email, 'Enter a valid email address.');
+        } else {
+            clearLiveError(email);
+        }
+    });
+}
+</script>
+{% endblock %}

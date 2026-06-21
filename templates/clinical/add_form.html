@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | Hospital{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ title }}</h1>
+        <p>Patient: <strong>{{ patient.first_name }} {{ patient.last_name }}</strong></p>
+    </div>
+    <a href="{% url 'clinical:patient_records' patient.pk %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Back to Records</a>
+</div>
+
+<div class="card" style="max-width:620px;">
+    <div class="card-header"><span class="card-title">{{ title }}</span></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
+                {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Finalize & Save</button>
+                <button type="submit" name="save_draft" class="btn btn-secondary" formnovalidate><i class="bi bi-file-earmark"></i> Save as Draft</button>
+                <a href="{% url 'clinical:patient_records' patient.pk %}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.card-body input, .card-body select, .card-body textarea').forEach(function(el){
+    if(el.type !== 'submit') el.classList.add('form-control');
+});
+</script>
+{% endblock %}
+{% endblock %}

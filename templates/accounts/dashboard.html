@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | Hospital{% endblock %}
+{% block meta_description %}Hospital Clinical Dashboard - Overview of daily operations, appointments, and security
+alerts.{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Good day, {{ user.first_name|default:user.username }}</h1>
+        <p>{{ user.get_role_display }} · {{ "now"|date:"l, d F Y" }}</p>
+    </div>
+    {% if user.is_receptionist %}
+    <a href="{% url 'appointments:appointment_create' %}" class="btn btn-primary"><i class="bi bi-plus"></i> New
+        Appointment</a>
+    {% endif %}
+</div>
+
+<!-- STAT CARDS -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+    {% if user.is_admin %}
+    <div class="stat-card">
+        <div class="stat-icon indigo"><i class="bi bi-people"></i></div>
+        <div class="stat-label">Total Staff</div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-sub"><a href="{% url 'accounts:user_list' %}">Manage →</a></div>
+    </div>
+    <div class="stat-card" style="{% if suspicious_count > 0 %}border-color:rgba(239,68,68,0.3);{% endif %}">
+        <div class="stat-icon {% if suspicious_count > 0 %}red{% else %}green{% endif %}">
+            <i class="bi bi-shield-{% if suspicious_count > 0 %}exclamation{% else %}check{% endif %}"></i>
+        </div>
+        <div class="stat-label">Security Events</div>
+        <div class="stat-value" style="{% if suspicious_count > 0 %}color:var(--danger){% endif %}">{{ suspicious_count }}</div>
+        <div class="stat-sub"><a href="{% url 'accounts:audit_log_list' %}">View Logs →</a></div>
+    </div>
+    {% endif %}
+    {% if user.is_receptionist or user.is_admin %}
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-person-vcard"></i></div>
+        <div class="stat-label">Registered Patients</div>
+        <div class="stat-value">{{ total_patients }}</div>
+        <div class="stat-sub"><a href="{% url 'patients:patient_list' %}">View All →</a></div>
+    </div>
+    {% endif %}
+    {% if user.is_receptionist or user.is_admin or user.is_doctor or user.is_nurse %}
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="bi bi-calendar-check"></i></div>
+        <div class="stat-label">Today's Appointments</div>
+        <div class="stat-value">{{ today_appointments }}</div>
+        <div class="stat-sub">{{ pending_appointments }} pending</div>
+    </div>
+    {% endif %}
+    {% if user.is_doctor %}
+    <div class="stat-card">
+        <div class="stat-icon amber"><i class="bi bi-clipboard2-pulse"></i></div>
+        <div class="stat-label">My Clinical Notes</div>
+        <div class="stat-value">{{ my_recent_notes }}</div>
+        <div class="stat-sub"><a href="{% url 'clinical:patient_list' %}">View Records →</a></div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- MFA CARD + SECURITY CHART -->
+<div style="display:grid;grid-template-columns:{% if user.is_admin %}1fr 2fr{% else %}1fr{% endif %};gap:20px;">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="bi bi-shield-lock" style="color:var(--accent)"></i> MFA Security</span>
+            {% if user.mfa_enabled %}<span class="badge badge-green"><i class="bi bi-check-circle"></i> Active</span>
+            {% else %}<span class="badge badge-red"><i class="bi bi-x-circle"></i> Inactive</span>{% endif %}
+        </div>
+        <div class="card-body">
+            {% if not user.mfa_enabled %}
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Multi-factor authentication is not
+                enabled. Enable it now to protect your account.</p>
+            <a href="{% url 'accounts:setup_mfa' %}" class="btn btn-primary"
+                style="width:100%;justify-content:center;"><i class="bi bi-qr-code"></i> Link Authenticator App</a>
+            {% else %}
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Your account is protected with
+                TOTP-based two-factor authentication.</p>
+            {% if user.is_admin %}
+            <a href="{% url 'accounts:toggle_mfa' %}" class="btn btn-danger" style="width:100%;justify-content:center;"
+                onclick="return showConfirm('{% url 'accounts:toggle_mfa' %}','Disable MFA','This will remove 2FA protection from your account. Are you sure?','danger')"><i
+                    class="bi bi-shield-slash"></i> Disable MFA</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% if user.is_admin %}
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="bi bi-graph-up-arrow" style="color:var(--accent)"></i> Security Events</span>
+            <span class="badge badge-indigo">Last 7 Days</span>
+        </div>
+        <div class="card-body" style="padding-top:16px;">
+            <canvas id="securityChart" style="height:200px;"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if user.is_admin %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('securityChart');
+        if (!ctx) return;
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [{
+                    data: {{ chart_values|safe }},
+                    fill: true,
+                    borderColor: '#6366F1',
+                    backgroundColor: 'rgba(99,102,241,0.06)',
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#6366F1',
+                    borderWidth: 2.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { family: 'Instrument Sans', size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Instrument Sans', size: 11 } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

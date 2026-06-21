@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Staff Management | Hospital{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Staff Management</h1>
+        <p>Manage all staff accounts and access roles</p>
+    </div>
+    <a href="{% url 'accounts:user_create' %}" class="btn btn-primary"><i class="bi bi-plus"></i> Add Staff</a>
+</div>
+
+<div class="card">
+    <div class="card-header"><span class="card-title">All Staff ({{ users|length }})</span></div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Security</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;border-radius:8px;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">{{ u.first_name|first|default:u.username|first|upper }}</div>
+                            <div>
+                                <div style="font-weight:600;">{{ u.first_name }} {{ u.last_name }}</div>
+                                <div style="font-size:12px;color:var(--text-muted);">{{ u.email|default:"No email" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:13px;color:var(--text-secondary);">@{{ u.username }}</td>
+                    <td>
+                        {% if u.role == 'admin' %}<span class="badge badge-indigo">Administrator</span>
+                        {% elif u.role == 'doctor' %}<span class="badge badge-blue">Doctor</span>
+                        {% elif u.role == 'nurse' %}<span class="badge badge-green">Nurse</span>
+                        {% else %}<span class="badge badge-gray">Receptionist</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_active %}<span class="badge badge-green"><i class="bi bi-circle-fill" style="font-size:7px;"></i> Active</span>
+                        {% else %}<span class="badge badge-red"><i class="bi bi-circle-fill" style="font-size:7px;"></i> Inactive</span>{% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+                            {% if u.is_locked %}<span class="badge badge-red" style="width:fit-content;"><i class="bi bi-lock"></i> Locked</span>
+                            {% elif u.mfa_exempt %}<span class="badge badge-indigo" style="width:fit-content;"><i class="bi bi-shield-slash"></i> MFA Exempt</span>
+                            {% elif u.mfa_enabled %}<span class="badge badge-green" style="width:fit-content;"><i class="bi bi-shield-check"></i> MFA Enabled</span>
+                            {% else %}<span class="badge badge-amber" style="width:fit-content;"><i class="bi bi-shield-exclamation"></i> No MFA</span>{% endif %}
+                            
+                            {% if u.security_risk_level > 0 %}
+                            <span class="badge {% if u.security_risk_level >= 75 %}badge-red{% else %}badge-amber{% endif %}" style="width:fit-content;"><i class="bi bi-activity"></i> {{ u.security_risk_level }}% Risk</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;">
+                            <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-ghost btn-icon btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% if u.is_locked %}
+                            <a href="{% url 'accounts:user_unlock' u.pk %}" class="btn btn-ghost btn-icon btn-sm" style="color:#10b981;" title="Unlock Account" onclick="return showConfirm('{% url 'accounts:user_unlock' u.pk %}','Unlock User Account','Are you sure you want to unlock {{ u.username }}\'s account and reset their security risk?','success')"><i class="bi bi-unlock"></i></a>
+                            {% endif %}
+                            {% if u.mfa_enabled %}
+                            <a href="{% url 'accounts:user_reset_mfa' u.pk %}" class="btn btn-ghost btn-icon btn-sm" style="color:#6366f1;" title="Reset User MFA" onclick="return showConfirm('{% url 'accounts:user_reset_mfa' u.pk %}','Reset Security Device','This will deactivate the current MFA setup for {{ u.username }} and force them to link a new device next time they log in.','warning')"><i class="bi bi-shield-slash"></i></a>
+                            {% endif %}
+                            <a href="{% url 'accounts:user_toggle_mfa_exemption' u.pk %}" class="btn btn-ghost btn-icon btn-sm" style="color:#6366f1;" title="{% if u.mfa_exempt %}Enforce MFA{% else %}Exempt from MFA{% endif %}" onclick="return showConfirm('{% url 'accounts:user_toggle_mfa_exemption' u.pk %}','Modify MFA Policy','Are you sure you want to change the mandatory MFA policy status for {{ u.username }}?','info')"><i class="bi bi-gear"></i></a>
+                            <a href="{% url 'accounts:user_toggle_active' u.pk %}" class="btn btn-ghost btn-icon btn-sm" title="Toggle Active" onclick="return showConfirm('{% url 'accounts:user_toggle_active' u.pk %}','Change Staff Status','Are you sure you want to change the active status of {{ u.username }}?','warning')"><i class="bi bi-{% if u.is_active %}pause-circle{% else %}play-circle{% endif %}"></i></a>
+                            {% if u.id != user.id %}
+                            <a href="#" class="btn btn-danger btn-icon btn-sm" title="Delete" onclick="return showConfirm('{% url 'accounts:user_delete' u.pk %}','Delete Staff Account','This will permanently remove {{ u.username }}\'s account. This cannot be undone.','danger')"><i class="bi bi-trash3"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6"><div class="empty-state"><i class="bi bi-people"></i><p>No staff accounts found.</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

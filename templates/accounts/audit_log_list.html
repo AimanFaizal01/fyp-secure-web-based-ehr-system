@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Audit Logs | Hospital{% endblock %}
+{% block meta_description %}Comprehensive security audit trail for the Hospital EHR system. Monitor staff actions and detect suspicious patterns.{% endblock %}
+{% block page_title %}Security Audit Trail{% endblock %}
+
+{% block extra_css %}
+.log-row td { transition: background 0.15s; }
+.log-row.suspicious { border-left: 3px solid #EF4444; }
+.log-row.normal    { border-left: 3px solid transparent; }
+.log-row.suspicious td:first-child { padding-left: 13px; }
+.log-row.normal    td:first-child  { padding-left: 16px; }
+
+/* Pagination buttons */
+.pg-btn {
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--border);
+    background:#fff; display:inline-flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:600; color:var(--text-secondary);
+    cursor:pointer; text-decoration:none; transition:all 0.15s;
+}
+.pg-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+.pg-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.pg-btn.disabled { opacity:0.35; pointer-events:none; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Security Audit Logs</h1>
+        <p>{{ page_obj.paginator.count }} events recorded across all sessions</p>
+    </div>
+</div>
+
+<div class="card">
+
+    {# ── Integrated Filter Bar ── #}
+    <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--bg-main);border-radius:var(--radius) var(--radius) 0 0;">
+        <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-wrap" style="flex:1;min-width:220px;">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control" placeholder="Search by user, action, or details..." value="{{ q|default:'' }}">
+            </div>
+            <select name="suspicious" class="form-control" style="width:160px;">
+                <option value="">All Events</option>
+                <option value="1" {% if is_suspicious == '1' %}selected{% endif %}>Suspicious Only</option>
+                <option value="0" {% if is_suspicious == '0' %}selected{% endif %}>Normal Only</option>
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+            {% if q or is_suspicious %}
+            <a href="{% url 'accounts:audit_log_list' %}" class="btn btn-ghost"><i class="bi bi-x"></i> Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {# ── Table ── #}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="padding-left:22px;">Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Details</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in page_obj %}
+            <tr class="log-row {% if log.is_suspicious %}suspicious{% else %}normal{% endif %}">
+                <td style="white-space:nowrap;">
+                    <div style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ log.timestamp|date:"M d, Y" }}</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);">{{ log.timestamp|date:"H:i:s" }} &nbsp;·&nbsp; {{ log.ip_address|default:"Local" }}</div>
+                </td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:9px;">
+                        {% if log.user %}
+                        <div class="sidebar-avatar" style="width:28px;height:28px;font-size:11px;border-radius:8px;">
+                            {{ log.user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div style="font-size:13px;font-weight:600;">{{ log.user.username }}</div>
+                            <div style="font-size:11px;color:var(--text-muted);">{{ log.user.get_role_display|default:log.user.role }}</div>
+                        </div>
+                        {% else %}
+                        <div class="sidebar-avatar" style="width:28px;height:28px;font-size:11px;border-radius:8px;background:var(--text-muted);">
+                            S
+                        </div>
+                        <div>
+                            <div style="font-size:13px;font-weight:600;color:var(--text-muted);">System / Deleted</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Internal Event</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <span style="font-size:13px;font-weight:500;color:{% if log.is_suspicious %}#DC2626{% else %}var(--text-primary){% endif %};">
+                        {{ log.action }}
+                    </span>
+                </td>
+                <td style="max-width:400px;">
+                    <p style="font-size:12.5px;color:var(--text-secondary);margin:0;line-height:1.5;word-break:break-word;" title="{{ log.details }}">
+                        {{ log.details }}
+                    </p>
+                </td>
+                <td>
+                    {% if log.is_suspicious %}
+                    <span class="badge badge-red"><i class="bi bi-shield-exclamation"></i> Suspicious</span>
+                    {% else %}
+                    <span class="badge badge-green"><i class="bi bi-shield-check"></i> Normal</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <i class="bi bi-journal-x"></i>
+                        <p>No events match your current filters.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# ── Pagination ── #}
+    {% if page_obj.has_other_pages %}
+    <div style="padding:16px 22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12.5px;color:var(--text-muted);">
+            Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+        </span>
+        <div style="display:flex;gap:4px;align-items:center;">
+            <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if is_suspicious %}&suspicious={{ is_suspicious }}{% endif %}{% else %}#{% endif %}" 
+               class="pg-btn {% if not page_obj.has_previous %}disabled{% endif %}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span class="pg-btn active">{{ num }}</span>
+                {% elif num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                    <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if is_suspicious %}&suspicious={{ is_suspicious }}{% endif %}" class="pg-btn">{{ num }}</a>
+                {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
+                    <span class="pg-btn disabled" style="border:none;background:none;">…</span>
+                {% endif %}
+            {% endfor %}
+
+            <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if is_suspicious %}&suspicious={{ is_suspicious }}{% endif %}{% else %}#{% endif %}"
+               class="pg-btn {% if not page_obj.has_next %}disabled{% endif %}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
