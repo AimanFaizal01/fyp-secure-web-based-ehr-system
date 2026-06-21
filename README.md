@@ -1,6 +1,4 @@
-# Hospital EHR System
-
-> **[ Project Home ](README.md)** &nbsp;&nbsp; | &nbsp;&nbsp; **[ Implementation Guide ](docs/IMPLEMENTATION_LOG.md)** &nbsp;&nbsp; | &nbsp;&nbsp; **[ Pentest Guide ](docs/PENTEST_GUIDE.md)** &nbsp;&nbsp; | &nbsp;&nbsp; **[ ngrok Tunneling ](docs/NGROK_SETUP.md)**
+# A Secure Web-Based EHR System
 
 ---
 
@@ -8,7 +6,7 @@ This is a web-based Electronic Health Record (EHR) prototype built with Django. 
 
 ## Setup Instructions
 
-Make sure you have Python installed (3.8+).
+Make sure to have Python installed (3.8+).
 
 1. Create a virtual environment:
    ```bash
@@ -60,7 +58,7 @@ Once configured, log in at `http://127.0.0.1:8000` using:
 From the **Staff Management** tab inside the dashboard, you can create other accounts (Doctors, Nurses, Receptionists) to test their respective permissions.
 
 ## Seeding Demo Data
-If you want to instantly populate the system with realistic Malaysian hospital patients, clinical records, and pre-configured staff accounts, run:
+Instantly populate the system with realistic Malaysian hospital patients, clinical records, and pre-configured staff accounts, run:
 ```bash
 python3 manage.py seed_malaysian_data
 ```
@@ -71,5 +69,3 @@ This will generate:
 * **Administrator:** `admin_wee`
 *(All pre-seeded accounts use the password `password123`)*
 
-## Testing the Scope
-Check out `docs/IMPLEMENTATION_LOG.md` for a step-by-step breakdown on how to test all the features and security requirements listed in the project scope.
